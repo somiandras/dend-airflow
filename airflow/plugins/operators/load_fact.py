@@ -1,3 +1,5 @@
+import logging
+
 from airflow.hooks.postgres_hook import PostgresHook
 from airflow.models import BaseOperator
 from airflow.utils.decorators import apply_defaults
@@ -18,9 +20,11 @@ class LoadFactOperator(BaseOperator):
 
     def execute(self, context):
         redshift_hook = PostgresHook(self.conn_id)
+        logging.info(f"Inserting data into {self.table}...")
         redshift_hook.run(
             f"""
                 insert into {self.table}
                 {self.select};
             """
         )
+        logging.info(f"Inserted data into {self.table}")
