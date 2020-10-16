@@ -1,3 +1,12 @@
+DROP TABLE IF EXISTS public.artists;
+DROP TABLE IF EXISTS public.songplays;
+DROP TABLE IF EXISTS public.songs;
+DROP TABLE IF EXISTS public.staging_events;
+DROP TABLE IF EXISTS public.staging_songs;
+DROP TABLE IF EXISTS public."time";
+DROP TABLE IF EXISTS public.users;
+
+
 CREATE TABLE public.artists (
 	artistid varchar(256) NOT NULL,
 	name varchar(256),
@@ -81,8 +90,6 @@ CREATE TABLE public.users (
 	"level" varchar(256),
 	CONSTRAINT users_pkey PRIMARY KEY (userid)
 );
-
-
 
 
 
