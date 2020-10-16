@@ -2,21 +2,43 @@ from airflow.hooks.postgres_hook import PostgresHook
 from airflow.models import BaseOperator
 from airflow.utils.decorators import apply_defaults
 
-class LoadDimensionOperator(BaseOperator):
 
-    ui_color = '#80BD9E'
+class LoadDimensionOperator(BaseOperator):
+    ui_color = "#80BD9E"
 
     @apply_defaults
-    def __init__(self,
-                 # Define your operators params (with defaults) here
-                 # Example:
-                 # conn_id = your-connection-name
-                 *args, **kwargs):
+    def __init__(
+        self,
+        *args,
+        table="",
+        redshift_conn_id="redshift",
+        select=None,
+        truncate=True,
+        **kwargs,
+    ):
+        """Operator for loading dimension tables with staged data.
+
+        Args:
+            table (str, optional): Name of dimension table. Defaults to "".
+            redshift_conn_id (str, optional): Name of saved Redshift connection. Defaults to "redshift".
+            select (str, optional): The select statement to be used in INSERT INTO SELECT. Defaults to None.
+            truncate (bool, optional): Truncate dimension table before loading. Defaults to True.
+        """
 
         super(LoadDimensionOperator, self).__init__(*args, **kwargs)
-        # Map params here
-        # Example:
-        # self.conn_id = conn_id
+        self.conn_id = redshift_conn_id
+        self.select = select
+        self.table = table
+        self.truncate = truncate
 
     def execute(self, context):
-        self.log.info('LoadDimensionOperator not implemented yet')
+        redshift_hook = PostgresHook(self.conn_id)
+        if self.truncate:
+            redshift_hook.run(f"truncate table {self.table}")
+
+        redshift_hook.run(
+            f"""
+                insert into {self.table}
+                {self.select};
+            """
+        )
