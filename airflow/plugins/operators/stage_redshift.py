@@ -1,3 +1,5 @@
+import logging
+
 from airflow.hooks.postgres_hook import PostgresHook
 from airflow.contrib.hooks.aws_hook import AwsHook
 from airflow.models import BaseOperator
@@ -34,7 +36,7 @@ class StageToRedshiftOperator(BaseOperator):
         creds = aws_hook.get_credentials()
         rendered_key = self.s3_key.format(**context)
         source_path = f"s3://{self.s3_bucket}/{rendered_key}/"
-
+        logging.info(f"Copying data from {source_path}")
         redshift_hook = PostgresHook(self.redshift_conn_id)
         redshift_hook.run(
             f"""truncate{self.table};
@@ -45,3 +47,4 @@ class StageToRedshiftOperator(BaseOperator):
                 json '{self.jsonpath}';
             """
         )
+        logging.info(f"Copied data from {source_path}")
